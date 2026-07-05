@@ -93,6 +93,7 @@ def get_all_keywords_and_replies():
         for keyword in keywords:
             yield keyword, replies
 
+
 @functools.lru_cache()
 def _get_reply_regexs() -> list[tuple[re.Pattern, list[str]]]:
     """Builds a list of regex to match on the trigger words.
@@ -108,7 +109,6 @@ def _get_reply_regexs() -> list[tuple[re.Pattern, list[str]]]:
         re_keyword = re.compile(fr'\b{keyword}\b', re.IGNORECASE)
         result.append(tuple([re_keyword, replies]))
     return result
-
 
 
 def triggers_reply(message: str) -> str:

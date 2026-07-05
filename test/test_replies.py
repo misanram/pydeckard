@@ -14,7 +14,6 @@ def always_reply():
     config.VERBOSITY = old_value
 
 
-
 PYTHON_MESSAGES = [
     'Necesito ayuda con python, gracias',
     'Este es el grupo de piton Canarias',
@@ -65,5 +64,3 @@ def test_repliest_consistent_data_structures():
         keywords, options = tupla
         assert isinstance(keywords, set)
         assert isinstance(options, list)
-
-

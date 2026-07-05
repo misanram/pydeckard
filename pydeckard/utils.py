@@ -1,25 +1,19 @@
 #!/usr/bin/env python3
 
-import datetime
 import dataclasses
-import functools
 import grp
 import platform
 import pwd
-import random
-import re
 import sys
 import textwrap
+
+from datetime import datetime as DateTime
 
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import (
-    Any,
-    Sequence,
     List,
-    Callable,
     Optional,
-    NamedTuple,
     )
 
 from pydeckard import config
@@ -49,7 +43,7 @@ Alias=PyDeckard.service
 """
 
 
-def box(title: str, text: str, width: int=68) -> str:
+def box(title: str, text: str, width: int = 68) -> str:
     len_title = len(title)
     header = ''.join([
         '┌',
@@ -89,7 +83,7 @@ def is_chinese(c: str) -> bool:
         ])
 
 
-def too_much_chinese_chars(s: str, percent: float|None=None) -> bool:
+def too_much_chinese_chars(s: str, percent: float | None = None) -> bool:
     """Detects if a text contains too many chinese characters.
     """
     percent = percent or config.CHINESE_CHARS_MAX_PERCENT
@@ -140,7 +134,6 @@ def is_bot(user: User) -> bool:
         ])
 
 
-
 def pluralise(number: int, singular: str, plural: Optional[str] = None) -> str:
     if plural is None:
         plural = f"{singular}s"
@@ -159,7 +152,7 @@ def since(reference) -> str:
 
         (str): Text describing the time passed since the reference.
     """
-    dt = datetime.datetime.now()
+    dt = DateTime.now()
     delta = dt - reference
     buff = []
     days = delta.days
@@ -182,9 +175,9 @@ def since(reference) -> str:
 class BaseParameter(ABC):
     name: str
     message: str
-    acceptable: List|None = None
-    start_value: int|float|None = None
-    stop_value: int|float|None = None
+    acceptable: List | None = None
+    start_value: int | float | None = None
+    stop_value: int | float | None = None
 
     def _help_prompt(self) -> str:
         if self.acceptable:
@@ -194,7 +187,7 @@ class BaseParameter(ABC):
         if self.start_value is not None and self.stop_value is None:
             return f' [{self.start_value} <= value]'
         if self.start_value is None and self.stop_value is not None:
-             return f' [value < {self.start_value}]'
+            return f' [value < {self.start_value}]'
         return ''
 
     def _acceptables_as_list(self) -> str:
@@ -218,7 +211,7 @@ class BaseParameter(ABC):
             ``None``.
         '''
         if self.acceptable and data not in self.acceptable:
-            raise ValueError (
+            raise ValueError(
                 f'El valor pasado [{data!r}] no está'
                 ' en la lista de valores aceptables:'
                 f' {self._acceptables_as_list()}.'
@@ -240,14 +233,14 @@ class BaseParameter(ABC):
                     )
         if self.start_value is None and self.stop_value is not None:
             if data >= self.stop_value:
-                raise ValueError (
+                raise ValueError(
                     f'El valor pasado [{data!r}] no está'
                     ' comprendido en el rango de valores aceptables:'
                     ' debería ser estríctamente menor'
                     f' que {self.stop_value}.'
                     )
-    
-    def ask_value(self) -> int|float|bool|str|None:
+
+    def ask_value(self) -> int | float | bool | str | None:
         prompt = f'{self.message}{self._help_prompt()}: '
         while True:
             data = input(prompt).strip()
@@ -265,12 +258,12 @@ class BaseParameter(ABC):
                     )
 
     @abstractmethod
-    def get_value(self, data) -> int|float|bool|str|None:
+    def get_value(self, data) -> int | float | bool | str | None:
         pass
 
 
 class IntParameter(BaseParameter):
-    
+
     def get_value(self, data) -> int:
         value = int(data)
         self._data_is_acceptable(value)
@@ -285,14 +278,15 @@ class PercentParameter(BaseParameter):
         super().__init__(*args, **kwargs)
 
     def get_value(self, data) -> float:
-        value = int(data) 
+        value = int(data)
         self._data_is_acceptable(value)
         return round(value / 100.0, 3)
+
 
 class StrParameter(BaseParameter):
 
     def get_value(self, data) -> str:
-        value = str(data) 
+        value = str(data)
         self._data_is_acceptable(value)
         return value
 
@@ -330,6 +324,7 @@ PARAMETERS = [
         'Tiempo de retardo para la bienvenida (en segundos)',
         ),
     ]
+
 
 def get_project_dir():
     return Path(__file__).parent.parent
@@ -431,4 +426,3 @@ def setup_bot():
                 system_name,
                 f'Entorno {system_name} desconocido. Usted mismo.',
                 ))
-
