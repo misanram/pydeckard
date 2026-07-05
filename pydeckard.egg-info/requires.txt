@@ -1,0 +1,8 @@
+python-telegram-bot==21.4
+prettyconf==2.2.1
+
+[dev]
+vulture
+flake8
+ruff
+mypy

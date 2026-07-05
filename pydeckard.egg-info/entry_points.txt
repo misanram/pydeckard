@@ -1,0 +1,2 @@
+[console_scripts]
+pydeckard = pydeckard.bot:main
