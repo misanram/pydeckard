@@ -2,7 +2,6 @@ from unittest.mock import Mock
 import pytest
 
 from pydeckard import utils
-from pydeckard import config
 
 # testing is_chinese
 
