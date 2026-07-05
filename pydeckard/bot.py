@@ -4,17 +4,25 @@ from datetime import datetime as DateTime
 import itertools
 import argparse
 import logging
+import logging.handlers
+import pathlib
 import sys
 import time
-from logging.handlers import RotatingFileHandler
 
 import telegram
 from telegram import Update
-from telegram.ext import ApplicationBuilder, filters, MessageHandler, CommandHandler, ContextTypes
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    ContextTypes,
+    filters,
+    MessageHandler,
+    )
 from telegram.constants import ParseMode
 
 from pydeckard import config
 from pydeckard import utils
+from pydeckard import replies
 
 
 class DeckardBot():
@@ -23,41 +31,60 @@ class DeckardBot():
         self.get_options()
         self.set_logger()
         self.started_at = DateTime.now()
-    
+
     def get_options(self):
         parser = argparse.ArgumentParser(
             prog='bot',
             description='PyDeckard Bot',
             epilog='',
             )
-        parser.add_argument('--setup', action='store_true', help='Start the setup wizard')
+        parser.add_argument(
+            '--setup',
+            action='store_true',
+            help='Start the setup wizard',
+            )
         args = parser.parse_args()
         if args.setup:
             utils.setup_bot()
 
     def set_logger(self):
         self.logger = logging.getLogger('pydeckard')
-        console_handler = logging.StreamHandler()
+        if config.DEBUG:
+            log_handler = logging.StreamHandler()
+        else:
+            logs_dir = pathlib.Path('logs')
+            if not logs_dir.exists():
+                logs_dir.mkdir()
+            log_handler = logging.handlers.RotatingFileHandler(
+                logs_dir / 'pydeckard.log',
+                maxBytes=8*1024*1024,
+                backupCount=9,
+                )
         logging.basicConfig(
-            level=logging.WARNING,  # Pone el nivel de todos los logger a WARNING
+            level=logging.WARNING,  # Pone todos los logger a WARNING
             format='%(asctime)s [%(name)s] %(levelname)s: %(message)s',
-            handlers=[console_handler],
+            handlers=[log_handler],
             force=True,
             )
         # Ajustamos el nivel del logger bot
         self.logger.setLevel(config.LOG_LEVEL)
-        config.log(self.logger.info)
+        config.log_bot_configuration(self.logger.info)
 
-    def trace(self, msg):
-        self.logger.info(msg)
+    def trace(self, msg, *args):
+        self.logger.info(msg, *args)
 
-    async def command_status(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def command_status(
+            self,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            ):
         self.trace('Received command: /status')
         python_version = sys.version.split(maxsplit=1)[0]
         text = '\n'.join([
             config.BOT_GREETING,
-            f'Status is <b>OK</b>, running since {utils.since(self.started_at)}',
-            f'Python version is {python_version}',
+            '- Status is <b>OK</b>',
+            f'- Running since {utils.since(self.started_at)}',
+            f'- Python version is {python_version}',
             ])
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -66,7 +93,11 @@ class DeckardBot():
             )
         self.trace(text)
 
-    async def command_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def command_start(
+            self,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            ):
         self.trace('Received command: /start')
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -74,7 +105,11 @@ class DeckardBot():
             parse_mode=ParseMode.HTML,
             )
 
-    async def command_help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def command_help(
+            self,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            ):
         self.trace('Received command: /help')
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -89,24 +124,31 @@ class DeckardBot():
             parse_mode=ParseMode.HTML,
             )
 
-    async def command_zen(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def command_zen(
+            self,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            ):
         self.trace('Received command: /zen')
-        text = '\n'.join(config.THE_ZEN_OF_PYTHON)
+        text = '\n'.join(replies.THE_ZEN_OF_PYTHON)
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=text,
             parse_mode=ParseMode.HTML,
             )
 
-    async def command_config(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def command_config(
+            self,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            ):
         self.trace('Received command: /config')
         buff = [
             f'Probabilidad de responder: {config.VERBOSITY:.2f}',
             'Disparadores:',
             ]
-        trigger_words = sorted(list(itertools.chain(*config.REPLIES.keys())))
-        for word in trigger_words:
-            buff.append(f' - {word}')
+        for keyword, _ in replies.get_all_keywords_and_replies():
+            buff.append(f' - {keyword}')
         text = '\n'.join(buff)
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -114,20 +156,29 @@ class DeckardBot():
             parse_mode=ParseMode.HTML,
             )
 
-    async def welcome(self, update: Update, context):
+    async def welcome(
+            self,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            ):
         self.trace('Received new user event')
         new_member = update.message.new_chat_members[0]
-
-        self.trace(f'Waiting {config.WELCOME_DELAY} seconds until user completes captcha...')
+        self.trace(
+            'Waiting %s seconds until user completes captcha...',
+            config.WELCOME_DELAY,
+            )
         time.sleep(config.WELCOME_DELAY)
-        membership_info = await context.bot.get_chat_member(update.message.chat_id, new_member.id)
+        membership_info = await context.bot.get_chat_member(
+            update.message.chat_id,
+            new_member.id,
+            )
         if membership_info['status'] == 'left':
-            self.trace(f'Skipping welcome message, user {new_member.name} is no longer in the chat')
+            self.trace(
+                'Skipping welcome message, user %s is no longer in the chat',
+                new_member.name,
+                )
             return
-
-        self.trace(f'Send welcome message for {new_member.name}')
         msg = None
-
         if new_member.is_bot:
             msg = f"{new_member.name} is a *bot*\\!\\! " \
                   "-> It could be kindly removed 🗑"
@@ -137,30 +188,52 @@ class DeckardBot():
                     update.message.chat_id,
                     update.message.message_id,
                 )
-                if await context.bot.kick_chat_member(update.message.chat_id, new_member.id):
-                    msg = (f"*{new_member.username}* has been banned because I "
-                           "considered it was a bot. ")
+                if await context.bot.kick_chat_member(
+                        update.message.chat_id,
+                        new_member.id,
+                        ):
+                    msg = (
+                        f"*{new_member.username}* has been banned"
+                        " because I considered it a bot. "
+                        )
             else:
-                msg = f"Welcome {new_member.name}\\!\\! " \
-                       "I am a friendly and polite *bot* 🤖"
+                msg = (
+                    f"Welcome {new_member.name}\\!\\! "
+                    "I am a friendly and polite *bot* 🤖"
+                    )
         if msg:
-            await update.message.reply_text(msg, parse_mode=telegram.constants.ParseMode('MarkdownV2'))
+            await update.message.reply_text(
+                msg,
+                parse_mode=telegram.constants.ParseMode('MarkdownV2'),
+                )
+            self.trace('Sent welcome message for %s', new_member.name)
 
-    async def reply(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def reply(
+            self,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            ):
         if config.bot_replies_enabled():
             msg = update.message.text
-            reply_spec = utils.triggers_reply(msg) if msg else None
-            if reply_spec is not None:
-                self.trace(f'Sending reply: {reply_spec.reply}')
-                await update.message.reply_text(reply_spec.reply)
+            if msg:
+                reply_text = replies.triggers_reply(msg)
+                if reply_text:
+                    self.trace('Sending reply: %s', reply_text)
+                    await update.message.reply_text(reply_text)
 
     def run(self):
         self.trace('Starting bot')
-        application = ApplicationBuilder().token(config.TELEGRAM_BOT_TOKEN).build()
+        application = (
+            ApplicationBuilder()
+            .token(config.TELEGRAM_BOT_TOKEN)
+            .build()
+            )
         start_handler = CommandHandler('start', self.command_start)
         application.add_handler(start_handler)
         help_handler = CommandHandler('help', self.command_help)
         application.add_handler(help_handler)
+
+        # Status handler
         status_handler = CommandHandler('status', self.command_status)
         application.add_handler(status_handler)
 
@@ -188,10 +261,9 @@ def main():
     """
     Arranca el bot
     """
-
     bot = DeckardBot()
     bot.run()
 
-    
+
 if __name__ == "__main__":
     main()

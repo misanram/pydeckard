@@ -29,7 +29,7 @@ readme = { file = ['README.md', ] }
 dependencies = { file = 'requirements.txt' }
 
 [tool.setuptools.dynamic.optional-dependencies]
-dev = { file = ["dev-requirements.txt"] }
+dev = { file = ["requirements-dev.txt"] }
 
 [tool.setuptools.packages.find]
 include = ["pydeckard*"]
@@ -39,5 +39,8 @@ where = ["."]
 pydeckard = "pydeckard.bot:main"
 
 [tool.ruff]
-line-length = 120
+line-length = 72
 target-version = "py312"
+
+[tool.mypy]
+follow_untyped_imports = true

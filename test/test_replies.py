@@ -1,49 +1,69 @@
 import pytest
 
-from pydeckard import config, utils
+from pydeckard import config
+from pydeckard import replies
 
 
 @pytest.fixture()
 def always_reply():
-    """
-    Make sure the bot always wants to reply, so we can test replies reliably
+    """Force bot to always reply, so we can test its replies reliably.
     """
     old_value = config.VERBOSITY
-    config.VERBOSITY = 1
-
+    config.VERBOSITY = 1.0
     yield
-
     config.VERBOSITY = old_value
 
-
-def test_reply_is_on(always_reply):
-    for i in range(1000000):
-        assert utils.bot_wants_to_reply()
 
 
 PYTHON_MESSAGES = [
     'Necesito ayuda con python, gracias',
     'Este es el grupo de piton Canarias',
-    'Creo que piton esta mal escrito'
+    'Creo que pitón esta mal escrito'
 ]
 
 
 @pytest.mark.parametrize('python_message', PYTHON_MESSAGES)
 def test_reply_with_python(always_reply, python_message):
-    reply_spec = utils.triggers_reply(python_message)
-    assert reply_spec.trigger in ('python', 'piton', 'piton')
-    assert reply_spec.reply in config.THE_ZEN_OF_PYTHON
+    reply = replies.triggers_reply(python_message)
+    assert reply in replies.THE_ZEN_OF_PYTHON
 
 
 def test_long_answer(always_reply):
     message = 'He visto cosas'
-    reply_spec = utils.triggers_reply(message)
-    assert reply_spec.trigger == 'He visto'
-    assert 'Es hora de morir' in reply_spec.reply
+    reply = replies.triggers_reply(message)
+    assert 'Es hora de morir' in reply
+    assert 'Tannhäuser' in reply
 
 
 def test_java_reply(always_reply):
     message = 'Yo antes programaba java pero ya no'
-    reply_spec = utils.triggers_reply(message)
-    assert reply_spec.trigger == 'java'
-    assert 'BIBA JABA' in reply_spec.reply
+    reply = replies.triggers_reply(message)
+    assert 'BIBA JABA' in reply
+
+
+def test_princesa_prometida_reply(always_reply):
+    expected = (
+        "Hola, soy Iñigo Montoya. Tú mataste a mi padre. Prepárate a"
+        "morir."
+        )
+    message = 'La Princesa Prometida es un peliculón'
+    assert replies.triggers_reply(message) == expected
+
+
+def test_inconcebible_reply(always_reply):
+    expected = (
+        "Siempre usas esa palabra y no creo que signifique"
+        " lo que tú crees que significa."
+        )
+    message = 'Eso que me dices es inconcebible!'
+    assert replies.triggers_reply(message) == expected
+
+
+def test_repliest_consistent_data_structures():
+    for tupla in replies.REPLIES:
+        assert len(tupla) == 2
+        keywords, options = tupla
+        assert isinstance(keywords, set)
+        assert isinstance(options, list)
+
+

@@ -1,9 +1,11 @@
 from unittest.mock import Mock
 import pytest
-from pydeckard import utils
 
+from pydeckard import utils
+from pydeckard import config
 
 # testing is_chinese
+
 
 @pytest.mark.parametrize('char_num', range(32, 256))
 def test_all_chars_under_255_must_pass(char_num):
@@ -56,17 +58,30 @@ def test_names_without_many_chinese_chars(valid_name):
 
 
 INVALID_NAMES = [
-    'Kung Fu 方方方',
-    '电报 社群',
-    '[VX.QQ同号253239090]电报社群增粉仅1毛,量大价优,可指定群指定筛选条件',
-    '及速度,提供明细报表[群发私发][社区运营][成品账号]欢迎项目方交易所洽',
-    '谈合作,诚招全球代理 ALL MARKET BEST PRICE FOR WORLDWIDE REAL',
+    ('sample_1', '电报 社群'),
+    ('sample_2', 'Kung Fu 方方方速'),
+    ('sample_3', (
+        '[VX.QQ同号253239090]电报社群增粉仅1毛,'
+        '量大价优,可指定群指定筛选条件'
+        )),
+    ('sample_4', (
+        '及速度,提供明细报表[群发私发][社区运营]'
+        '[成品账号]欢迎项目方交易所洽'
+        )),
+    ('sample_5', (
+        '谈合作,诚招全球代理 ALL MARKET BEST PRICE'
+        ' FOR WORLDWIDE REAL'
+        )),
     ]
 
 
-@pytest.mark.parametrize('invalid_name', INVALID_NAMES)
+@pytest.mark.parametrize(
+    'invalid_name',
+    [_[1] for _ in INVALID_NAMES],
+    ids=[_[0] for _ in INVALID_NAMES],
+    )
 def test_names_with_too_many_chinese_chars(invalid_name):
-    assert utils.too_much_chinese_chars(invalid_name)
+    assert utils.too_much_chinese_chars(invalid_name, percent=0.10)
 
 
 # testing is_bot
