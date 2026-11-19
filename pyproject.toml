@@ -5,13 +5,13 @@ build-backend = 'setuptools.build_meta'
 [project]
 name = 'pydeckard'
 description = 'Un bot de Telegram para el canal de Python Canarias'
-requires-python = '>=3.10'
+requires-python = '>=3.14'
 authors = [
     { name = 'Python Canarias', email = 'info@pythoncanarias.es' },
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",
     "Topic :: Communications :: Chat",

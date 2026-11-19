@@ -1,5 +1,6 @@
 #!/usr/bin/enb python3
 
+import asyncio
 from datetime import datetime as DateTime
 import argparse
 import logging
@@ -275,6 +276,8 @@ def main():
     """
     Arranca el bot
     """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     bot = DeckardBot()
     bot.run()
 

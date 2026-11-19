@@ -44,11 +44,12 @@ REPLIES = [
     ({"javascript", "js", "jsp"}, ["BIBA JABAESKRIP!! 🔮"]),
     ({"php"}, ["BIBA PEACHEPÉ!.! ⛱"]),
     ({"perl"}, ["BIBA PERRRRRL! 🐫"]),
-    ({"chatgpt", "gpt", "openai", "IA"}, [
+    ({"chatgpt", "gpt", "openai", "ia", "claude"}, [
         "BIBA CHATJEPETÉ!! 🤖",
         "BIBA SIBERDAIN SISTEMS ☠",
         "BIBA ESKÁINET ☠",
         "SAYONARA, BABY",
+        "Si dejamos la ética aparte...",
         ]),
     ({"h(e|as|an) visto", "visteis", "vieron", "vi"}, [
         "Yo he visto cosas que vosotros no creeríais. Atacar naves en"
@@ -67,6 +68,7 @@ REPLIES = [
         "Siempre usas esa palabra y no creo que signifique"
         " lo que tú crees que significa."
         ]),
+    ({'whatsapp'}, ["Whatsapp? WHATSAPP? ¿Qué somos, animales?"]),
     ]
 
 

@@ -1,16 +1,16 @@
 Metadata-Version: 2.4
 Name: pydeckard
-Version: 0.1.7
+Version: 0.1.8
 Summary: Un bot de Telegram para el canal de Python Canarias
 Author-email: Python Canarias <info@pythoncanarias.es>
 License-Expression: GPL-3.0-or-later
 Project-URL: Homepage, https://github.com/pythoncanarias/pydeckard.git
 Classifier: Programming Language :: Python :: 3
-Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.14
 Classifier: Operating System :: OS Independent
 Classifier: Intended Audience :: Developers
 Classifier: Topic :: Communications :: Chat
-Requires-Python: >=3.10
+Requires-Python: >=3.14
 Description-Content-Type: text/x-rst
 License-File: LICENSE
 Requires-Dist: python-telegram-bot==21.4
@@ -20,6 +20,7 @@ Requires-Dist: vulture; extra == "dev"
 Requires-Dist: flake8; extra == "dev"
 Requires-Dist: ruff; extra == "dev"
 Requires-Dist: mypy; extra == "dev"
+Requires-Dist: icecream; extra == "dev"
 Dynamic: license-file
 
 # PyDeckard

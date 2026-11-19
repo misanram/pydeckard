@@ -6,3 +6,4 @@ vulture
 flake8
 ruff
 mypy
+icecream

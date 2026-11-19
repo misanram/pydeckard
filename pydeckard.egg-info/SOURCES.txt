@@ -6,6 +6,7 @@ requirements.txt
 pydeckard/__init__.py
 pydeckard/bot.py
 pydeckard/config.py
+pydeckard/replies.py
 pydeckard/utils.py
 pydeckard.egg-info/PKG-INFO
 pydeckard.egg-info/SOURCES.txt
